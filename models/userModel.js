@@ -1,5 +1,6 @@
 const mongoose=require('mongoose');
 const validator=require('validator')
+const  bcrypt=require('bcryptjs')
 
 const userSchema=new mongoose.Schema({
     name:{
@@ -22,6 +23,7 @@ const userSchema=new mongoose.Schema({
     passwordConfirm:{
         type:String,
         required:[true,'Please provide confirm password'],
+        // validate work on "SAVE" only
         validate:{
             validator:function(el){
                 return el===this.password
@@ -29,6 +31,20 @@ const userSchema=new mongoose.Schema({
             message:"Password does not match"
         }
     }
+})
+
+userSchema.pre('save',async function(next){
+    //Check if password is modified
+    //is modified is availble on every document
+    if(!this.isModified('password')) return next()
+
+    //Hash Password
+    this.password=await bcrypt.hash(this.password,12)
+
+    //Setting confirm password to null
+    this.passwordConfirm=undefined
+
+    next()
 })
 
 const User=mongoose.model('User',userSchema)
