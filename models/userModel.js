@@ -11,7 +11,7 @@ const userSchema=new mongoose.Schema({
         lowercase:true,
         required:[true,'Please provide email field!'],
         unique:true,
-        validator:[validator.isEmail,'please provide a valid email']
+        validate:[validator.isEmail,'please provide a valid email']
     },
     photo:String,
     password:{
@@ -21,7 +21,13 @@ const userSchema=new mongoose.Schema({
     },
     passwordConfirm:{
         type:String,
-        required:[true,'Please provide confirm password']
+        required:[true,'Please provide confirm password'],
+        validate:{
+            validator:function(el){
+                return el===this.password
+            },
+            message:"Password does not match"
+        }
     }
 })
 
