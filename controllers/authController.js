@@ -2,7 +2,7 @@ const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync')
 const jwt = require('jsonwebtoken')
 const AppError = require('../utils/appError')
-
+const { promisify } = require('util')
 
 const signToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -51,4 +51,38 @@ exports.signin = catchAsync(async (req, res, next) => {
         success: 'true',
         token
     })
+})
+
+
+exports.protectRoute = catchAsync(async (req, res, next) => {
+    // checking if token exist
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1]
+    }
+
+    if (!token) {
+        return next(new AppError("You are not logged in ! Kindly login to get access", 401))
+    }
+
+    //verifing token
+    //we are using promisif so jwt.sign will return promise otherwise have to use callback fucntion
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+
+    //Check if user exist
+    let freshUser = await User.findById(decoded.id)
+    if (!freshUser) {
+        return next(new AppError("The user belonging to token does not exist", 401))
+    }
+
+    //Check if user changed password
+
+    if (freshUser.changedPasswordAfter(decoded.iat)) {
+        return next(new AppError("Password was changed kindly login again!", 401))
+    }
+
+    //Grant Access
+    req.user = freshUser
+    next()
 })
