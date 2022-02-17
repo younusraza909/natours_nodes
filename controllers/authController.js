@@ -153,7 +153,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   let user = User.findOne({ passwordResetToken: hashedToken, passwordExpireToken: { $gt: Date.now() } })
 
   if (!user) {
-    new AppError('Token is invalid or has been expired.', 400)
+    return next(new AppError('Token is invalid or has been expired.', 400))
   }
   //Updating password
   user.password = req.body.password
@@ -170,3 +170,27 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   });
 
 });
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  //if user exist
+  let user = await User.findById(req.user.id).select("+password")
+
+
+  let match = await user.correctPassword(req.body.currentPassword, user.password)
+
+  if (!match) {
+    return next(new AppError('Password does not match', 401))
+  }
+
+  user.password = req.body.password
+  user.passwordConfirm = req.body.passwordConfirm
+
+  await user.save()
+
+  const token = signToken(user._id);
+
+  res.status(200).json({
+    success: 'true',
+    token
+  });
+})
