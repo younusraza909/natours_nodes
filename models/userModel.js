@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please provide confirm password'],
     // validate work on "SAVE" only
     validate: {
-      validator: function(el) {
+      validator: function (el) {
         return el === this.password;
       },
       message: 'Password does not match'
@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
   passwordExpireToken: Date
 });
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   //Check if password is modified
   //is modified is availble on every document
   if (!this.isModified('password')) return next();
@@ -57,14 +57,26 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-userSchema.methods.correctPassword = async function(
+userSchema.pre('save', async function (next) {
+  //checking if password is not modified or new
+  //this is new shows us that this document is new
+  if (!this.isModified('password') || this.isNew) return next()
+
+  //somethime jwt is genenrated first and then property is changed
+  // so we subtract 1 sec so we can get accuracy and user can logged in back
+  this.passwordChangedAt = Date.now() - 1000
+
+  next()
+})
+
+userSchema.methods.correctPassword = async function (
   canadiatePassword,
   password
 ) {
   return await bcrypt.compare(canadiatePassword, password);
 };
 
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changesTimeStamp = this.passwordChangedAt.getTime();
 
@@ -73,7 +85,7 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   return false;
 };
 
-userSchema.methods.generateTokenResetPassword = function() {
+userSchema.methods.generateTokenResetPassword = function () {
   //generating token
   const resetToken = crypto.randomBytes(32).toString('hex');
 
