@@ -62,6 +62,12 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+//this query will run on ever middleware start from find word
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: true })
+  next()
+})
+
 userSchema.pre('save', async function (next) {
   //checking if password is not modified or new
   //this is new shows us that this document is new
