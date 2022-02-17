@@ -42,6 +42,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     user: updatedUser
   })
 })
+
+exports.delete = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false })
+
+  res.status(204).json({
+    success: true,
+    user: null
+  })
+})
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',

@@ -40,7 +40,12 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
-  passwordExpireToken: Date
+  passwordExpireToken: Date,
+  active: {
+    type: String,
+    default: true,
+    select: false
+  }
 });
 
 userSchema.pre('save', async function (next) {
