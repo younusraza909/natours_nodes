@@ -3,13 +3,13 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Tour = require('./../../models/tourModel');
 
-dotenv.config({ path: '../../.env' });
+dotenv.config({ path: './.env' });
 
 const DB = process.env.DATABASE.replace(
-  '<password>',
+  '<PASSWORD>',
   process.env.DATABASE_PASSWORD
 );
-console.log(process.env.DATABASE);
+
 mongoose
   .connect(DB, {
     useNewUrlParser: true,
