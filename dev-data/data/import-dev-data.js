@@ -2,15 +2,13 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Tour = require('./../../models/tourModel');
+const Review = require('./../../models/reviewModel');
 
 dotenv.config({ path: '../../.env' });
 
 console.log(process.env.DATABASE)
 
-const DB = process.env.DATABASE.replace(
-  '<password>',
-  process.env.DATABASE_PASSWORD
-);
+const DB = 'mongodb+srv://Raza:Raza@cluster0.xilxw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 
 mongoose
   .connect(DB, {
@@ -21,12 +19,12 @@ mongoose
   .then(() => console.log('DB connection successful!'));
 
 // READ JSON FILE
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
+const reviews = JSON.parse(fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8'));
 
 // IMPORT DATA INTO DB
 const importData = async () => {
   try {
-    await Tour.create(tours);
+    await Review.create(reviews);
     console.log('Data successfully loaded!');
   } catch (err) {
     console.log(err);
